@@ -1,0 +1,62 @@
+#!/bin/bash
+# chkconfig: - 30 21
+# description: rsync service. written by ljy
+
+. /etc/init.d/functions
+# Rsync Settings
+
+RSYNC_CONF="/root/etc/rsyncd.conf"
+RSYNC_PID="/root/tmp/rsyncd.pid"
+RETVAL=0
+prog="rsync"
+
+start() {
+	echo -n $"Starting $prog: "
+	rsync --daemon --config=$RSYNC_CONF
+	RETVAL=$?
+	echo
+	return $RETVAL
+}
+
+stop() {
+	echo -n $"Stopping $prog: "
+	killall rsync &>/dev/null
+	sleep 2
+	RETVAL=$?
+        echo
+        return $RETVAL
+}
+
+restart() {
+	stop
+	start
+}
+
+status() {
+	myport=`netstat -lnp|grep 873|wc -l`
+        if [ $myport -eq 2 ]
+        then
+        	echo "rsync is running"
+        else
+        	echo "rsync is stopped"
+	fi
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        restart
+        ;;
+  status)
+	status
+	;;
+  *)
+         echo $"Usage: $0 {start|stop|restart|status}"
+  RETVAL=1
+esac
+exit $RETVAL
